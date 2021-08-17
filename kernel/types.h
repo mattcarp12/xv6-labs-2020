@@ -8,3 +8,8 @@ typedef unsigned int  uint32;
 typedef unsigned long uint64;
 
 typedef uint64 pde_t;
+
+// Matt't types
+typedef uchar bool;
+#define TRUE 1
+#define FALSE 0
