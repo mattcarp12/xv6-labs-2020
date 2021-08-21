@@ -32,6 +32,7 @@ int main(int argc, char *argv[])
     char buff[1024];
     while (1)
     {
+
         gets(buff, MAXLEN);
         int line_len = strlen(buff);
         if (line_len < 1)
@@ -41,6 +42,7 @@ int main(int argc, char *argv[])
         // printf("Successfully read string from stdin:\t%s\n", buff);
 
         int last_space = 0;
+        int xargs = 0;
         for (int i = 0; i < line_len; i++)
         {
             if (buff[i] == ' ' || i == line_len - 1)
@@ -49,21 +51,25 @@ int main(int argc, char *argv[])
                 char *new_arg = malloc(new_arg_len);
                 memmove(new_arg, buff + last_space, new_arg_len);
                 // printf("Contents of new_arg: %s\t len: %d\n", new_arg, new_arg_len);
-                cmd[new_argc++] = new_arg;
+                int new_argv_index = new_argc + xargs;
+                cmd[new_argv_index] = new_arg;
                 last_space = i;
+                xargs++;
             }
         }
-        cmd[new_argc] = '\0';
+        cmd[new_argc + xargs] = '\0';
 
         int pid = fork();
         if (pid == 0)
         {
             // in child
-            // printf("Running cmd %s in child process (pid: %d) \n", path, pid);
-            for (int i = 0; i < new_argc; i++)
+            printf("Running cmd %s in child process (pid: %d) \n", path, pid);
+            printf("New_argc: %d\txargs: %d\n", new_argc, xargs);
+            for (int i = 0; i < new_argc + xargs + 1; i++)
             {
-                // printf("%s\t", cmd[i]);
+                printf("%s\t", cmd[i]);
             }
+            printf("\nRunning exec...\n\n");
             exec(path, cmd);
         }
         else
