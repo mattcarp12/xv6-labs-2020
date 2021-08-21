@@ -9,7 +9,7 @@ typedef unsigned long uint64;
 
 typedef uint64 pde_t;
 
-// Matt't types
+// Matt's types
 typedef uchar bool;
 #define TRUE 1
 #define FALSE 0
