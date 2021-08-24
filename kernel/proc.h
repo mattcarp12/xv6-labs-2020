@@ -116,3 +116,8 @@ struct proc
   char name[16];               // Process name (debugging)
   int tracemask;               // Trace Mask (debugging)
 };
+
+
+// Function to return number of processes
+// whose state is not UNUSED
+uint64 nproc();
