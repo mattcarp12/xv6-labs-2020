@@ -103,4 +103,10 @@ struct proc {
   struct file *ofile[NOFILE];  // Open files
   struct inode *cwd;           // Current directory
   char name[16];               // Process name (debugging)
+
+  // these are for user space alarm handler
+  int alarm_ticks;             // Number of ticks between calls to alarm_handler
+  void (*alarm_handler)();     // Handler function pointer
+  int alarm_tick_counter;      // Used to determine when to call handler
+  struct trapframe *alarm_trapframe; // data page for alarm_handler
 };

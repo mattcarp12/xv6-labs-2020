@@ -25,6 +25,7 @@ OBJS = \
   $K/trap.o \
   $K/syscall.o \
   $K/sysproc.o \
+  $K/syssig.o \
   $K/bio.o \
   $K/fs.o \
   $K/log.o \
@@ -175,6 +176,7 @@ UPROGS=\
 	$U/_grind\
 	$U/_wc\
 	$U/_zombie\
+	$U/_alarmtest\
 
 
 
