@@ -12,13 +12,13 @@
 uint64 sys_sigalarm(void)
 {
     struct proc *p = myproc();
-    if (argint(0, &p->alarm_ticks) < 0)
+    if (argint(0, &p->alarm.interval) < 0)
         return -1;
     uint64 handler_pointer;
     if (argaddr(1, &handler_pointer) < 0)
         return -1;
 
-    p->alarm_handler = (void (*)())handler_pointer;
+    p->alarm.handler = (void (*)())handler_pointer;
 
     //printf("Alarm Ticks: %d\t Alarm Handler: %p \t Alarm Handler: %p \n", p->alarm_ticks, p->alarm_handler, handler_pointer);
 
