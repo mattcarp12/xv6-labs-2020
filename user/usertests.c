@@ -2101,7 +2101,6 @@ sbrkmuch(char *s)
     printf("%s: sbrk deallocation produced wrong address, a %x c %x\n", a, c);
     exit(1);
   }
-
   // can one re-allocate that page?
   a = sbrk(0);
   c = sbrk(PGSIZE);
@@ -2114,7 +2113,6 @@ sbrkmuch(char *s)
     printf("%s: sbrk de-allocation didn't really deallocate\n", s);
     exit(1);
   }
-
   a = sbrk(0);
   c = sbrk(-(sbrk(0) - oldbrk));
   if(c != a){

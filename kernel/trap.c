@@ -30,22 +30,33 @@ void trapinithart(void)
 void lazy_alloc(void)
 {
   uint64 page_start = PGROUNDDOWN(r_stval());
-  pagetable_t pagetable = myproc()->pagetable;
-
-  char *mem = kalloc();
-  if (mem == 0)
-    return;
+  char *mem;
+  if ((mem = kalloc()) == 0)
+    exit(-1);
+  
   memset(mem, 0, PGSIZE);
-  if (mappages(pagetable, page_start, PGSIZE, (uint64)mem, PTE_W | PTE_X | PTE_R | PTE_U) != 0)
+  if (mappages(myproc()->pagetable, page_start, PGSIZE, (uint64)mem, PTE_W | PTE_X | PTE_R | PTE_U) != 0)
   {
     kfree(mem);
     return;
   }
-  myproc()->sz += PGSIZE;
 }
 
 void page_fault(void)
 {
+  uint64 stval = r_stval();
+  struct proc *p = myproc();
+  // Exit if page fault on address higher
+  // than any allocated with sbrk
+  if (stval > p->sz)
+    exit(-1);
+
+
+  uint64 stackbase = PGROUNDDOWN(p->trapframe->sp);
+  // Exit if page fault on guard page below stack
+  if (stval < stackbase && stval > stackbase - PGSIZE)
+    exit(-1);
+
   lazy_alloc();
 }
 
