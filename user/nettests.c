@@ -243,11 +243,13 @@ main(int argc, char *argv[])
     int pid = fork();
     if (pid == 0){
       ping(2000 + i + 1, dport, 1);
+      printf("PING!!!\n");
       exit(0);
     }
   }
   for (i = 0; i < 10; i++){
     wait(&ret);
+    printf("Child process returned: %d\n", ret);
     if (ret != 0)
       exit(1);
   }
