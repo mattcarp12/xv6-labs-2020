@@ -21,23 +21,6 @@ static volatile uint32 *regs;
 
 struct spinlock e1000_lock;
 
-static void lock_info()
-{
-  printf("E1000_LOCK -- LOCKED: %d \n", e1000_lock.locked);
-}
-static void lock()
-{
-  acquire(&e1000_lock);
-  printf("Acquired e1000 lock!!!\n");
-  lock_info();
-}
-static void unlock()
-{
-  release(&e1000_lock);
-  printf("Released e1000 lock!!!\n");
-  lock_info();
-}
-
 // called by pci_init().
 // xregs is the memory address at which the
 // e1000's registers are mapped.
@@ -116,15 +99,11 @@ void update_e1000_tdt()
 
 int e1000_transmit(struct mbuf *m)
 {
-  //
-  // Your code here.
-  //
   // the mbuf contains an ethernet frame; program it into
   // the TX descriptor ring so that the e1000 sends it. Stash
   // a pointer so that it can be freed after sending.
-  //
 
-  lock();
+  acquire(&e1000_lock);
 
   // TX ring index at which it expects next packet
   uint32 tx_ring_index = regs[E1000_TDT];
@@ -139,7 +118,7 @@ int e1000_transmit(struct mbuf *m)
   if (txm)
     mbuffree(txm);
 
-  // Fill the descriptor
+  // Fill the TX descriptor
   txd->addr = (uint64)m->head;
   txd->length = m->len;
   txd->cmd = E1000_TXD_CMD_RS | E1000_TXD_CMD_EOP;
@@ -147,11 +126,11 @@ int e1000_transmit(struct mbuf *m)
 
   update_e1000_tdt();
 
-  unlock();
+  release(&e1000_lock);
   return 0;
 
 error:
-  unlock();
+  release(&e1000_lock);
   return -1;
 }
 
@@ -163,52 +142,49 @@ void update_e1000_rdt()
 static void
 e1000_recv(void)
 {
-
-  //
-  // Your code here.
-  //
   // Check for packets that have arrived from the e1000
   // Create and deliver an mbuf for each packet (using net_rx()).
   //
 
   // printf("RECEIVED A PACKET@!#\n");
-  lock_info();
-  lock();
+  // acquire(&e1000_lock);
 
   // RX ring index at which next packet lives
   uint32 rx_ring_index = (regs[E1000_RDT] + 1) % RX_RING_SIZE;
-  // printf("E1000_RDT: %d\n", rx_ring_index);
 
   struct rx_desc *rxd = &rx_ring[rx_ring_index];
 
   if (!rxd_stat_dd(rxd))
   {
     // No packet available
-    unlock();
+    // release(&e1000_lock);
     return;
   }
 
   struct mbuf *rxb = rx_mbufs[rx_ring_index];
   rxb->len = rxd->length;
 
-  unlock();
+  // release(&e1000_lock);
   net_rx(rxb);
-  lock();
+  // acquire(&e1000_lock);
 
   rx_mbufs[rx_ring_index] = mbufalloc(MBUF_DEFAULT_HEADROOM);
   if (!rx_mbufs[rx_ring_index])
     panic("e1000");
   rx_ring[rx_ring_index].addr = (uint64)rx_mbufs[rx_ring_index]->head;
   update_e1000_rdt();
-  unlock();
+  // release(&e1000_lock);
 }
 
 void e1000_intr(void)
 {
+  acquire(&e1000_lock);
   // tell the e1000 we've seen this interrupt;
   // without this the e1000 won't raise any
   // further interrupts.
   regs[E1000_ICR] = 0xffffffff;
 
   e1000_recv();
+
+  release(&e1000_lock);
 }
